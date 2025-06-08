@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>88-Key Web Piano</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      overflow-x: auto;
+    }
+
+    .piano-container {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0 0 10px 0;
+      color: #333;
+    }
+
+    #piano {
+      display: flex;
+      position: relative;
+      margin: 20px auto;
+      padding: 20px;
+      height: 230px;
+      min-width: 1000px;
+      background: #310; /* wood-color */
+      border-radius: 5px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .key {
+      position: relative;
+      box-sizing: border-box;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: background-color 0.1s;
+    }
+
+    .white {
+      width: 40px;
+      height: 100%;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 0 0 5px 5px;
+      z-index: 1;
+    }
+
+    .white.active {
+      background: #e0e0e0;
+    }
+
+    .black {
+      width: 24px;
+      height: 60%;
+      background: black;
+      margin: 0 -12px;
+      z-index: 3;
+      border-radius: 0 0 5px 5px;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    }
+
+    .black.active {
+      background: #444;
+    }
+
+    .key-label {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      font-size: 10px;
+      color: #999;
+    }
+
+    .black .key-label {
+      color: #666;
+    }
+
+    .controls {
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .octave-controls {
+      margin: 10px 0;
+    }
+
+    button {
+      padding: 8px 16px;
+      margin: 0 5px;
+      cursor: pointer;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #45a049;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .voice-selector {
+      margin: 15px 0;
+    }
+
+    .voice-selector select {
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .voice-selector label {
+      margin-right: 10px;
+      font-weight: bold;
+      color: #555;
+    }
+  </style>
+</head>
+<body onload="initPiano()">
+  <div class="piano-container">
+    <h1>🎹 Web Piano</h1>
+    
+    <div class="controls">
+      <button id="midi-connect">Connect MIDI Device</button>
+      <div class="status" id="status">Status: Ready</div>
+      <!-- <div class="octave-controls">
+        <button onclick="shiftOctave(-1)">⬅️ Lower Octave</button>
+        <span>Octave: <span id="current-octave">4</span></span>
+        <button onclick="shiftOctave(1)">Higher Octave ➡️</button>
+      </div> -->
+      <div class="voice-selector">
+        <label for="voice-select">Instrument:</label>
+        <select id="voice-select" onchange="changeVoice(this.value)">
+          <option value="drums">Drums</option>
+          <option value="piano">Acoustic Piano</option>
+          <option value="electric">Electric Piano</option>
+          <option value="organ">Church Organ</option>
+          <option value="strings">String Ensemble</option>
+          <option value="synth">Synthesizer</option>
+          <option value="guitar">Acoustic Guitar</option>
+          <option value="bass">Electric Bass</option>
+          <option value="flute">Flute</option>
+          <option value="brass">Brass Section</option>
+          <option value="choir">Choir Aahs</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  
+  <div id="piano"></div>
+  </div>
+  <script>
+// Global variables
+let audioContext;
+let midiAccess;
+let oscillators = [];
+let currentOctave = 4; // Middle C is C4
+let currentVoice = 'piano';
+const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const BLACK_KEYS = [1, 3, 6, 8, 10]; // Positions of black keys in an octave
+
+// Voice presets
+const VOICES = {
+  drums: {
+    type: 'sine',
+    attack: 0.05,
+    decay: 0.2,
+    sustain: 0.3,
+    release: 0.2,
+    filterType: 'lowpass',
+    filterFreq: 4000,
+    filterQ: 1,
+    vibratoAmount: 0,
+    vibratoSpeed: 5
+  },
+  piano: {
+    type: 'sine',
+    attack: 0.05,
+    decay: 0.2,
+    sustain: 0.3,
+    release: 0.2,
+    filterType: 'lowpass',
+    filterFreq: 4000,
+    filterQ: 1,
+    vibratoAmount: 0,
+    vibratoSpeed: 5
+  },
+  electric: {
+    type: 'sawtooth',
+    attack: 0.01,
+    decay: 0.5,
+    sustain: 0.4,
+    release: 0.3,
+    filterType: 'lowpass',
+    filterFreq: 3000,
+    filterQ: 0.5,
+    vibratoAmount: 0.1,
+    vibratoSpeed: 4
+  },
+  organ: {
+    type: 'sine',
+    attack: 0.01,
+    decay: 0.1,
+    sustain: 1.0,
+    release: 0.1,
+    filterType: 'highpass',
+    filterFreq: 100,
+    filterQ: 0.5,
+    vibratoAmount: 0.2,
+    vibratoSpeed: 6
+  },
+  strings: {
+    type: 'sine',
+    attack: 0.5,
+    decay: 0.7,
+    sustain: 0.6,
+    release: 1.0,
+    filterType: 'lowpass',
+    filterFreq: 2500,
+    filterQ: 0.7,
+    vibratoAmount: 0.3,
+    vibratoSpeed: 5
+  },
+  synth: {
+    type: 'sawtooth',
+    attack: 0.1,
+    decay: 0.3,
+    sustain: 0.4,
+    release: 0.5,
+    filterType: 'lowpass',
+    filterFreq: 2000,
+    filterQ: 2,
+    vibratoAmount: 0.4,
+    vibratoSpeed: 7
+  },
+  guitar: {
+    type: 'sine',
+    attack: 0.01,
+    decay: 0.5,
+    sustain: 0.2,
+    release: 0.5,
+    filterType: 'bandpass',
+    filterFreq: 1000,
+    filterQ: 1.5,
+    vibratoAmount: 0.1,
+    vibratoSpeed: 5
+  },
+  bass: {
+    type: 'sine',
+    attack: 0.01,
+    decay: 0.3,
+    sustain: 0.7,
+    release: 0.4,
+    filterType: 'lowpass',
+    filterFreq: 500,
+    filterQ: 1.0,
+    vibratoAmount: 0.05,
+    vibratoSpeed: 3
+  },
+  flute: {
+    type: 'sine',
+    attack: 0.3,
+    decay: 0.5,
+    sustain: 0.7,
+    release: 0.5,
+    filterType: 'bandpass',
+    filterFreq: 1500,
+    filterQ: 1.2,
+    vibratoAmount: 0.15,
+    vibratoSpeed: 6
+  },
+  brass: {
+    type: 'sawtooth',
+    attack: 0.2,
+    decay: 0.3,
+    sustain: 0.8,
+    release: 0.3,
+    filterType: 'bandpass',
+    filterFreq: 800,
+    filterQ: 0.8,
+    vibratoAmount: 0.2,
+    vibratoSpeed: 5
+  },
+  choir: {
+    type: 'sine',
+    attack: 0.5,
+    decay: 0.7,
+    sustain: 0.6,
+    release: 1.0,
+    filterType: 'bandpass',
+    filterFreq: 1200,
+    filterQ: 1.0,
+    vibratoAmount: 0.25,
+    vibratoSpeed: 4
+  }
+};
+
+// Initialize the piano
+function initPiano() {
+  createPianoKeys();
+  initAudio();
+  setupMidiConnectButton();
+  updateStatus('Ready. Click keys or connect a MIDI device.');
+}
+
+// Create the 88 piano keys
+function createPianoKeys() {
+  const piano = document.getElementById('piano');
+  piano.innerHTML = '';
+  
+  // 49 key piano
+  for (let midiNote = 36; midiNote <= 84; midiNote++) {
+    const noteName = getNoteName(midiNote);
+    const isBlack = BLACK_KEYS.includes(midiNote % 12);
+    
+    const key = document.createElement('div');
+    key.className = `key ${isBlack ? 'black' : 'white'}`;
+    key.dataset.note = midiNote;
+    
+    // Add note label (only for some keys to avoid clutter)
+    if (!isBlack) {
+      const label = document.createElement('div');
+      label.className = 'key-label';
+      label.textContent = noteName;
+      key.appendChild(label);
+    }
+    
+    // Add event listeners
+    key.addEventListener('mousedown', () => playNoteOn(midiNote));
+    key.addEventListener('mouseup', () => playNoteOff(midiNote));
+    key.addEventListener('mouseleave', () => playNoteOff(midiNote));
+    
+    piano.appendChild(key);
+  }
+}
+
+// Get note name from MIDI note number
+function getNoteName(midiNote) {
+  const noteIndex = (midiNote - 12) % 12; // Adjust for MIDI note numbers
+  const octave = Math.floor(midiNote / 12) - 1;
+  return `${NOTE_NAMES[noteIndex]}${octave}`;
+}
+
+// Initialize audio context
+function initAudio() {
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  }
+}
+
+// Set up MIDI connection button
+function setupMidiConnectButton() {
+  const button = document.getElementById('midi-connect');
+  if (navigator.requestMIDIAccess) {
+    button.addEventListener('click', () => {
+      navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
+    });
+  } else {
+    button.style.display = 'none';
+    updateStatus('Web MIDI API not supported in this browser.');
+  }
+}
+
+// MIDI success handler
+function onMIDISuccess(access) {
+  midiAccess = access;
+  const inputs = midiAccess.inputs;
+  
+  // Reset all inputs
+  inputs.forEach(input => {
+    input.onmidimessage = null;
+  });
+  
+  // Set up new inputs
+  inputs.forEach(input => {
+    input.onmidimessage = handleMIDIMessage;
+  });
+  
+  // Listen for new MIDI devices
+  midiAccess.onstatechange = (e) => {
+    updateStatus(`MIDI ${e.port.name} ${e.port.state}`);
+  };
+  
+  updateStatus(`Connected to MIDI: ${Array.from(inputs).map(i => i.name).join(', ') || 'No devices found'}`);
+}
+
+// MIDI failure handler
+function onMIDIFailure() {
+  updateStatus('Could not access MIDI devices.');
+}
+
+// Handle MIDI messages
+function handleMIDIMessage(event) {
+  const [command, note, velocity] = event.data;
+  
+  // Note on (144 = note on, 128 = note off)
+  if ((command === 144 || command === 128) && note >= 21 && note <= 108) {
+    if (command === 144 && velocity > 0) {
+      playNoteOn(note);
+    } else {
+      playNoteOff(note);
+    }
+  }
+}
+
+// Change the current voice
+function changeVoice(voice) {
+  currentVoice = voice;
+  updateStatus(`Voice changed to: ${voice.charAt(0).toUpperCase() + voice.slice(1)}`);
+  
+  // Stop all currently playing notes to apply new voice
+  Object.keys(oscillators).forEach(note => {
+    playNoteOff(parseInt(note));
+  });
+}
+
+// Play a note with the current voice settings
+function playNoteOn(note) {
+  const key = document.querySelector(`.key[data-note="${note}"]`);
+  if (!key) return;
+  
+  key.classList.add('active');
+  
+  // Don't create a new oscillator if one already exists for this note
+  if (oscillators[note]) return;
+  
+  // Get current voice settings
+  const voice = VOICES[currentVoice] || VOICES.piano;
+  
+  // Create audio nodes
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+  
+  // Set oscillator type and frequency
+  oscillator.type = voice.type;
+  const frequency = 440 * Math.pow(2, (note - 69) / 12);
+  oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+  
+  // Apply vibrato if specified
+  if (voice.vibratoAmount > 0) {
+    const vibrato = audioContext.createOscillator();
+    const vibratoGain = audioContext.createGain();
+    
+    vibrato.frequency.value = voice.vibratoSpeed;
+    vibratoGain.gain.value = frequency * voice.vibratoAmount * 0.01;
+    
+    vibrato.connect(vibratoGain);
+    vibratoGain.connect(oscillator.frequency);
+    vibrato.start();
+  }
+  
+  // Apply envelope
+  const now = audioContext.currentTime;
+  gainNode.gain.setValueAtTime(0, now);
+  gainNode.gain.linearRampToValueAtTime(1.0, now + voice.attack);
+  gainNode.gain.exponentialRampToValueAtTime(voice.sustain, now + voice.attack + voice.decay);
+  
+  // Connect nodes
+  oscillator.connect(gainNode);
+  
+  // Add filter based on voice settings
+  const filter = audioContext.createBiquadFilter();
+  filter.type = voice.filterType;
+  filter.frequency.value = voice.filterFreq;
+  filter.Q.value = voice.filterQ;
+  
+  gainNode.connect(filter);
+  filter.connect(audioContext.destination);
+  
+  // Start the oscillator
+  oscillator.start();
+  
+  // Store the audio nodes and voice settings
+  oscillators[note] = { 
+    oscillator, 
+    gainNode, 
+    filter,
+    voice: {...voice},
+    startTime: now
+  };
+}
+
+// Stop a note with the current voice's release
+function playNoteOff(note) {
+  const key = document.querySelector(`.key[data-note="${note}"]`);
+  if (key) key.classList.remove('active');
+  
+  const nodes = oscillators[note];
+  if (!nodes) return;
+  
+  const { oscillator, gainNode, filter, voice, startTime } = nodes;
+  const now = audioContext.currentTime;
+  
+  // Calculate how long the note has been playing
+  const noteDuration = now - startTime;
+  
+  // Release the note with the voice's release time
+  gainNode.gain.cancelScheduledValues(now);
+  gainNode.gain.setValueAtTime(gainNode.gain.value, now);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, now + (voice.release || 0.2));
+  
+  // Clean up after the release time
+  setTimeout(() => {
+    // Only clean up if the note hasn't been retriggered
+    if (oscillators[note] === nodes) {
+      try {
+        oscillator.stop();
+        oscillator.disconnect();
+        gainNode.disconnect();
+        if (filter) filter.disconnect();
+        delete oscillators[note];
+      } catch (e) {
+        console.error('Error cleaning up audio:', e);
+      }
+    }
+  }, (voice.release || 0.2) * 1000 + 50); // Add small buffer time
+}
+
+// Change octave
+function shiftOctave(offset) {
+  const newOctave = currentOctave + offset;
+  if (newOctave >= 0 && newOctave <= 8) {
+    currentOctave = newOctave;
+    document.getElementById('current-octave').textContent = currentOctave;
+    updateStatus(`Octave changed to ${currentOctave}`);
+  }
+}
+
+// Update status message
+function updateStatus(message) {
+  const statusElement = document.getElementById('status');
+  if (statusElement) {
+    statusElement.textContent = `Status: ${message}`;
+  }
+  console.log(message);
+}
+
+// Handle keyboard events
+document.addEventListener('keydown', (e) => {
+  // Add keyboard mapping if needed
+});
+
+document.addEventListener('keyup', (e) => {
+  // Handle key up if needed
+});
+</script>
+</body>
+</html>
