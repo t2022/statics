@@ -1,0 +1,21 @@
+{
+  "dir": "ltr",
+  "lang": "en",
+  "name": "Vibe Books",
+  "display": "standalone",
+  "short_name": "VibeBooks",
+  "theme_color": "red",
+  "description": "A Progressive Web Application for Vibe Books",
+  "orientation": "any",
+  "background_color": "blue",
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "icons": [{
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+  }],
+  "url": "https://t2022.github.io/statics/",
+  "start_url": "/statics/vibe2/",
+  "generated": "true"
+}
