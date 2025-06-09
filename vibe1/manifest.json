@@ -1,0 +1,21 @@
+{
+  "dir": "ltr",
+  "lang": "en",
+  "name": "Vibe Code",
+  "display": "standalone",
+  "short_name": "VibeCode",
+  "theme_color": "black",
+  "description": "A Progressive Web Application for Vibe Code",
+  "orientation": "any",
+  "background_color": "black",
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "icons": [{
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+  }],
+  "url": "/",
+  "start_url": "/vibe1/",
+  "generated": "true"
+}
