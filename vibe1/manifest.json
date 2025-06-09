@@ -4,10 +4,10 @@
   "name": "Vibe Code",
   "display": "standalone",
   "short_name": "VibeCode",
-  "theme_color": "black",
+  "theme_color": "red",
   "description": "A Progressive Web Application for Vibe Code",
   "orientation": "any",
-  "background_color": "black",
+  "background_color": "blue",
   "related_applications": [],
   "prefer_related_applications": false,
   "icons": [{
