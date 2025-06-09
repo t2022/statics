@@ -15,7 +15,7 @@
       "sizes": "512x512",
       "type": "image/png"
   }],
-  "url": "/",
-  "start_url": "/vibe1/",
+  "url": "https://t2022.github.io/statics/",
+  "start_url": "/statics/vibe1/",
   "generated": "true"
 }
