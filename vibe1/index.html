@@ -247,7 +247,7 @@
 
       <div class="controls">
         <div class="toggle-buttons flex-left">
-          <button id="search-button" onclick="fetchWikiContent()">
+          <button id="search-button">
             Search
           </button>
         </div>
@@ -281,7 +281,7 @@
           >
             🖨️
           </button>
-          <input type="checkbox" id="full-screen-button" />
+          <!-- <input type="checkbox" id="full-screen-button" /> -->
         </div>
       </div>
 
@@ -348,11 +348,30 @@
         }
       }
 
-      async function fetchWikiContent() {
-        const searchInput = document
+      
+
+     
+      // on submit, go to the window location with that term
+      document
+        .getElementById("search-button")
+        .addEventListener("click", () => {
+          const searchInput = document
           .getElementById("search-input")
           .value.trim();
-        if (!searchInput) return;
+          console.log(searchInput);
+          window.location.href = `?q=${searchInput}`;
+        });
+
+      const urlParams = new URLSearchParams(window.location.search)
+      const urlSearchTerm = urlParams.get('q').replaceAll("\"", "");
+
+      console.log(urlSearchTerm);
+      if (urlSearchTerm) {
+        document.getElementById("search-input").value = urlSearchTerm;
+        fetchWikiContent();
+      }
+
+      async function fetchWikiContent() {
 
         const contentDiv = document.getElementById("content");
         const statusDiv = document.getElementById("status");
@@ -363,7 +382,7 @@
 
           const response = await fetch(
             `https://en.wikipedia.org/api/rest_v1/page/html/${encodeURIComponent(
-              searchInput
+              urlSearchTerm
             )}`
           );
 
@@ -504,7 +523,7 @@
 
           console.log(toc);
 
-          content.insertBefore(toc, content.querySelector(".collapsible"));
+          // content.insertBefore(toc, content.querySelector(".collapsible"));
 
         } else {
           content.classList.remove("reader-mode");
@@ -521,7 +540,13 @@
         }
       }
 
+      toggleReaderMode();
+
       function printArticle() {
+        // expand all
+        document.querySelectorAll(".collapsible").forEach((header) => {
+          header.classList.add("active");
+        });
         // create a new window with the content and styles for reader mode
         const content = document.getElementById("content").innerHTML;
         const styles = `
@@ -564,17 +589,17 @@
         printWindow.close();
       }
 
-      document
-        .getElementById("full-screen-button")
-        .addEventListener("change", () => {
-          if (document.getElementById("full-screen-button").checked) {
-            document.body.classList.add("fullscreen");
-            document.documentElement.requestFullscreen();
-          } else {
-            document.body.classList.remove("fullscreen");
-            document.exitFullscreen();
-          }
-        });
+      // document
+      //   .getElementById("full-screen-button")
+      //   .addEventListener("change", () => {
+      //     if (document.getElementById("full-screen-button").checked) {
+      //       document.body.classList.add("fullscreen");
+      //       document.documentElement.requestFullscreen();
+      //     } else {
+      //       document.body.classList.remove("fullscreen");
+      //       document.exitFullscreen();
+      //     }
+      //   });
     </script>
     <script>
       if ('serviceWorker' in navigator) {
