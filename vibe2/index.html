@@ -194,7 +194,7 @@
       const encodedTitle = encodeURIComponent(bookTitle)
 
       bookTitleElement.textContent = bookTitle
-      bookAuthorElement.innerHTML = `<a href="/statics/vibe1/?s=${bookAuthor}">${bookAuthor}</a>`
+      bookAuthorElement.innerHTML = `<a href="/statics/vibe1/?q=${bookAuthor}">${bookAuthor}</a>`
       bookSubtitleElement.textContent = bookSubtitle
       bookDescriptionElement.textContent = bookDescription
       youtubeLink.href = `https://www.youtube.com/results?search_query=${encodedTitle} book`
