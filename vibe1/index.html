@@ -328,6 +328,7 @@
           const hrefAttr = link.getAttribute("href");
           const href = hrefAttr?.substring(hrefAttr.lastIndexOf("/") + 1) ?? "";
           if (href) {
+            link.removeAttribute("title");
             link.removeAttribute("href");
             // if data-search contains the string redlink return
             if (href.includes("redlink")) {
