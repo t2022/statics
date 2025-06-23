@@ -223,6 +223,14 @@
         margin: 0.5em;
         font-size: 1.2em;
       }
+      #textContent {
+        display: none;
+        white-space: pre-wrap;
+        font-family: monospace;
+        padding: 1em;
+        background: #f0f0f0;
+        border-radius: 0.5em;
+      }
     </style>
 
     <link rel="icon" href="icon.png" type="image/png">
@@ -266,12 +274,20 @@
           >
             📖
           </button>
-          <button
+          <!-- <button
             id="darkModeButton"
             onclick="toggleDarkMode()"
             class="toggle-button"
           >
             🌙
+          </button> -->
+          <!-- button to show only text -->
+          <button
+            id="textOnlyButton"
+            onclick="toggletextOnlyMode()"
+            class="toggle-button"
+          >
+            📄
           </button>
           <!-- button to export this page as PDF -->
           <button
@@ -301,11 +317,43 @@
     <main>
       <small id="status"></small>
       <div id="content"></div>
+      <div id="textContent" style="display: none;"></div>
     </main>
 
     <script>
+      const contentDiv = document.getElementById("content");
+      const statusDiv = document.getElementById("status");
+      const textContent = document.getElementById("textContent");
       let isReaderMode = false;
       let isDarkMode = false;
+
+      const elementsToRemove = [
+        "ad",
+        "aside",
+        "comments",
+        "footer",
+        "head",
+        "header",
+        "figcaption",
+        "figure",
+        "form",
+        "iframe",
+        // "img",
+        "nav",
+        "noscript",
+        ".advertisement",
+        ".mw-editsection",
+        ".mw-ref",
+        ".navigation-not-searchable",
+        ".noprint",
+        ".reference",
+        ".reflist",
+        ".social-share",
+        "script",
+        "style",
+        "sup",
+        "table",
+      ];
 
       //if search clicks enter, fetchWikiContent()
       document
@@ -374,9 +422,6 @@
 
       async function fetchWikiContent() {
 
-        const contentDiv = document.getElementById("content");
-        const statusDiv = document.getElementById("status");
-
         try {
           statusDiv.textContent = "Loading...";
           contentDiv.innerHTML = "";
@@ -419,6 +464,29 @@
           });
 
           contentDiv.innerHTML = `<h1>${title.innerText}</h1><hr>` + content.innerHTML;
+
+          textContent.innerHTML = contentDiv.innerHTML;
+          // remove sections where the h2 is "See also" or "References" etc
+          textContent.querySelectorAll("h2").forEach((header) => {
+            if (header.textContent === "See also" || header.textContent === "Notes" || header.textContent === "References" || header.textContent === "Additional sources" || header.textContent === "External links") {
+              // remove the header and its parent element
+              header.parentElement.remove();
+            }
+          });
+          // remove all elemebtsToRemove from textContent
+          elementsToRemove.forEach((selector) => {
+            textContent.querySelectorAll(selector).forEach((el) => {
+              el.remove();
+            });
+          });
+          // remove newlines with spaces
+          textContent.textContent = textContent.textContent.replace(/\n/g, "NEWLINEHEY");
+          // remove multiple NEWLINEHEY in a row and replace with a single new line
+          textContent.textContent = textContent.textContent.replace(/(NEWLINEHEY\s*)+/g, "NEWLINEHEY");
+          // replace NEWLINEHEY with a new line
+          textContent.innerHTML = textContent.innerHTML.replace(/NEWLINEHEY/g, "\n\n");
+
+          textContent.innerHTML = textContent.textContent
 
           convertLinksToSearch();
 
@@ -468,35 +536,6 @@
           content.classList.add("reader-mode");
           document.getElementById("readerButton").textContent = "🖥️";
 
-          // Clean up the content
-          const elementsToRemove = [
-            "ad",
-            "aside",
-            "comments",
-            "footer",
-            "head",
-            "header",
-            "figcaption",
-            "figure",
-            "form",
-            "iframe",
-            // "img",
-            "nav",
-            "noscript",
-            ".advertisement",
-            ".mw-editsection",
-            ".mw-ref",
-            ".navigation-not-searchable",
-            ".noprint",
-            ".reference",
-            ".reflist",
-            ".social-share",
-            "script",
-            "style",
-            "sup",
-            "table",
-          ];
-
           content.querySelectorAll(elementsToRemove).forEach((el) => {
             el.style.display = "none";
             el.remove();
@@ -542,6 +581,15 @@
       }
 
       toggleReaderMode();
+
+      function toggletextOnlyMode() {      
+        content.style.display = content.style.display === "none" ? "block" : "none";
+        textContent.style.display = textContent.style.display === "none" ? "block" : "none";
+        const textOnlyButton = document.getElementById("textOnlyButton");
+        textOnlyButton.textContent = textContent.style.display === "none"
+          ? "📄"
+          : "📜";
+      }
 
       function printArticle() {
         // expand all
