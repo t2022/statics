@@ -360,6 +360,11 @@
         .getElementById("search-input")
         .addEventListener("keyup", (event) => {
           if (event.key === "Enter") {
+            // take to the url with the search term
+            const searchInput = document
+              .getElementById("search-input")
+              .value.trim();
+            window.location.href = `?q=${searchInput}`;
             fetchWikiContent();
           }
         });
