@@ -473,7 +473,7 @@
           textContent.innerHTML = contentDiv.innerHTML;
           // remove sections where the h2 is "See also" or "References" etc
           textContent.querySelectorAll("h2").forEach((header) => {
-            if (header.textContent === "See also" || header.textContent === "Notes" || header.textContent === "References" || header.textContent === "Additional sources" || header.textContent === "External links") {
+            if (header.textContent === "See also" || header.textContent === "Notes" || header.textContent === "References" || header.textContent === "Additional sources" || header.textContent === "External links" || header.textContent === "Further reading" || header.textContent === "Bibliography") {
               // remove the header and its parent element
               header.parentElement.remove();
             }
