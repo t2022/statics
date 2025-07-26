@@ -194,7 +194,7 @@
         color: white;
         border-radius: 0.5em;
         cursor: pointer;
-        font-size: large;
+        font-family: monospace;
       }
       .flex-left {
         justify-content: flex-start;
@@ -228,7 +228,8 @@
         white-space: pre-wrap;
         font-family: monospace;
         padding: 1em;
-        background: #f0f0f0;
+        background: #111;
+        color: #eee;
         border-radius: 0.5em;
       }
     </style>
@@ -287,7 +288,7 @@
             onclick="toggletextOnlyMode()"
             class="toggle-button"
           >
-            📄
+            [+]
           </button>
           <!-- button to export this page as PDF -->
           <button
@@ -590,10 +591,10 @@
       function toggletextOnlyMode() {      
         content.style.display = content.style.display === "none" ? "block" : "none";
         textContent.style.display = textContent.style.display === "none" ? "block" : "none";
-        const textOnlyButton = document.getElementById("textOnlyButton");
-        textOnlyButton.textContent = textContent.style.display === "none"
-          ? "📄"
-          : "📜";
+        // hide headers and footers
+        document.querySelectorAll("header, footer").forEach((el) => {
+          el.style.display = el.style.display === "none" ? "flex" : "none";
+        });
       }
 
       function printArticle() {
@@ -643,17 +644,10 @@
         printWindow.close();
       }
 
-      // document
-      //   .getElementById("full-screen-button")
-      //   .addEventListener("change", () => {
-      //     if (document.getElementById("full-screen-button").checked) {
-      //       document.body.classList.add("fullscreen");
-      //       document.documentElement.requestFullscreen();
-      //     } else {
-      //       document.body.classList.remove("fullscreen");
-      //       document.exitFullscreen();
-      //     }
-      //   });
+      // when body double clicked, toggle text only mode
+      document.body.addEventListener("dblclick", () => {
+        toggletextOnlyMode();
+      });
     </script>
     <script>
       if ('serviceWorker' in navigator) {
