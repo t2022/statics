@@ -13,224 +13,702 @@
     />
     <title>Wiki Reader</title>
     <style>
+      :root {
+        --system-blue: #007aff;
+        --system-gray: #8e8e93;
+        --system-gray2: #aeaeb2;
+        --system-gray3: #c7c7cc;
+        --system-gray4: #d1d1d6;
+        --system-gray5: #e5e5ea;
+        --system-gray6: #f2f2f7;
+        
+        /* Default Theme (Light) */
+        --bg: #ffffff;
+        --text: #000000;
+        --secondary-bg: #f2f2f7;
+        --secondary-text: rgba(60, 60, 67, 0.6);
+        --separator: rgba(60, 60, 67, 0.2);
+        --header-bg: rgba(255, 255, 255, 0.82);
+        --border-radius: 10px;
+      }
+
+      [data-theme="sepia"] {
+        --bg: #f4ecd8;
+        --text: #5b4636;
+        --secondary-bg: #ece4d0;
+        --secondary-text: #7d6b5c;
+        --separator: rgba(91, 70, 54, 0.15);
+        --header-bg: rgba(244, 236, 216, 0.82);
+        --system-gray6: #ebe3cf;
+      }
+
+      [data-theme="dark"] {
+        --bg: #1c1c1e;
+        --text: #ffffff;
+        --secondary-bg: #2c2c2e;
+        --secondary-text: rgba(235, 235, 245, 0.6);
+        --separator: rgba(255, 255, 255, 0.15);
+        --header-bg: rgba(28, 28, 30, 0.82);
+        --system-gray6: #000000;
+      }
+
+      [data-theme="black"] {
+        --bg: #000000;
+        --text: #ffffff;
+        --secondary-bg: #1c1c1e;
+        --secondary-text: rgba(255, 255, 255, 0.5);
+        --separator: rgba(255, 255, 255, 0.1);
+        --header-bg: rgba(0, 0, 0, 0.82);
+        --system-gray6: #000000;
+      }
+
       * {
         box-sizing: border-box;
         margin: 0;
         padding: 0;
-        font-family: inherit;
+        -webkit-tap-highlight-color: transparent;
       }
+
       body {
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-          Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
-          sans-serif;
-        line-height: 1.6;
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 1em;
-        background: #f5f5f5;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        background-color: var(--system-gray6);
+        color: var(--text);
+        line-height: 1.4;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+        transition: background-color 0.3s, color 0.3s;
+      }
+
+      header.container {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background: var(--header-bg);
+        backdrop-filter: blur(30px) saturate(180%);
+        -webkit-backdrop-filter: blur(30px) saturate(180%);
+        padding: 12px 16px;
+        border-bottom: 0.5px solid var(--separator);
         display: flex;
         flex-direction: column;
-        height: 100vh;
+        gap: 10px;
       }
-      header {
-        margin-bottom: 0.5em;
-      }
-      main {
-        flex: 1;
-        overflow: scroll;
-      }
-      h2,
-      h3,
-      h4 {
-        margin-block: 1em;
-      }
-      a {
-        color: #004bff;
-        text-decoration: none;
-      }
-      a:hover {
-        text-decoration: underline;
-      }
-      img {
-        max-width: 100%;
-        height: auto;
-      }
-      ol,
-      ul {
-        margin-left: 2em;
-      }
-      section.collapsible * {
-        display: none;
-      }
-      section.collapsible h2,
-      section.active * {
-        display: revert;
-      }
-      h2 {
-        cursor: pointer;
-      }
-      .container {
-        background: white;
-        padding: 0.5em;
-        border-radius: 0.5em;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        display: flex;
-        flex-direction: column;
-        gap: 0.5em;
-      }
+
       .search-box {
         display: flex;
-        gap: 0.5em;
-        justify-content: space-between;
+        align-items: center;
+        background: rgba(118, 118, 128, 0.12);
+        border-radius: 10px;
+        padding: 0 4px 0 8px;
+        height: 40px;
+        transition: background 0.2s;
+        gap: 4px;
       }
-      .controls {
-        display: flex;
-        gap: 0.5em;
-        justify-content: space-between;
-      }
-      label {
-        position: relative;
+
+      .search-box label {
         display: flex;
         align-items: center;
         flex: 1;
+        position: relative;
       }
+
+      .search-box::before {
+        content: "search";
+        font-family: 'Material Icons';
+        color: var(--secondary-text);
+        font-size: 18px;
+        margin-right: 4px;
+      }
+
+      #search-input {
+        background: transparent;
+        border: none;
+        font-size: 17px;
+        color: var(--text);
+        width: 100%;
+        outline: none;
+        padding: 6px 0;
+      }
+
+      #search-button {
+        background: var(--system-blue);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        height: 32px;
+        white-space: nowrap;
+      }
+
+      #search-button:active {
+        opacity: 0.7;
+      }
+
+      #search-input::placeholder {
+        color: var(--secondary-text);
+      }
+
       #search-field-clear {
-        border: 1px solid #ddd;
+        background: var(--system-gray);
+        color: white;
+        border: none;
         border-radius: 50%;
-        position: absolute;
-        right: 0.5em;
+        width: 16px;
+        height: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 1em;
-        width: 1em;
-        z-index: 9;
-        line-height: 0;
-        padding: 0.75em;
-      }
-      #full-screen-button {
-        width: 2em;
-      }
-      input {
-        flex: 1;
-        padding: 0.5em;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 1em;
-      }
-      button {
-        padding: 0.25em 0.75em;
-        background: #2563eb;
-        color: white;
-        border: none;
-        border-radius: 4px;
+        font-size: 9px;
         cursor: pointer;
-      }
-      button:hover {
-        background: #1d4ed8;
-      }
-      button:disabled {
-        background: #93c5fd;
-        cursor: not-allowed;
-      }
-      #content {
-        /* margin-top: 1em; */
-      }
-      #status {
-        color: #666;
-        margin-top: 0.5em;
-      }
-      .reader-mode {
-        font-family: Georgia, "Times New Roman", Times, serif;
-      }
-      .reader-mode img {
-        max-width: 100%;
-        height: auto;
-        margin: 20px 0;
-      }
-      .reader-mode table {
-        display: none;
-      }
-      .reader-mode .mw-ref,
-      .reader-mode .reference,
-      .reader-mode style,
-      .reader-mode script,
-      .reader-mode .navigation-not-searchable,
-      .reader-mode .noprint {
-        display: none;
-      }
-      .reader-mode p {
-        margin: 1.5em 0;
-      }
-      .reader-mode h1 {
-        margin-bottom: 0.5em;
-        line-height: 1.4;
+        opacity: 0.8;
+        margin-right: 4px;
       }
 
-      .reader-mode h2,
-      .reader-mode h3,
-      .reader-mode h4 {
-        margin: 1.5em 0 0.5em;
-        line-height: 1.3;
+      .controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
       }
-      /* Dark mode styles */
-      .dark-mode {
-        background: #1a1a1a;
-        color: #e0e0e0;
-      }
-      .dark-mode .container {
-        background: #2d2d2d;
-      }
-      .dark-mode a {
-        color: #93c5fd;
-      }
-      /* Toggle button styles */
+
       .toggle-buttons {
         display: flex;
-        gap: 1em;
-        flex-direction: row;
+        gap: 6px;
       }
-      .toggle-button {
+
+      button {
+        background: var(--system-blue);
         color: white;
-        border-radius: 0.5em;
+        border: none;
+        border-radius: 20px;
+        padding: 6px 14px;
+        font-size: 14px;
+        font-weight: 500;
         cursor: pointer;
-        font-family: monospace;
+        transition: opacity 0.2s, background 0.2s;
       }
-      .flex-left {
-        justify-content: flex-start;
+
+      hr {
+        margin-block: 1em;
+        border-width: 0.5px;
       }
-      .flex-right {
-        justify-content: flex-end;
+
+      button:active {
+        opacity: 0.7;
       }
-      .trow {
-        display: flex !important;
-        gap: 1em;
-        /* margin-bottom: 1em; */
+
+      button.toggle-button {
+        background: transparent;
+        color: var(--system-blue);
+        padding: 6px;
+        font-size: 22px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        min-height: 32px;
       }
-      .thumbcaption {
-        font-size: 0.9em;
-        color: #666;
-        text-align: center;
+
+      button.toggle-button:hover {
+        background: var(--secondary-bg);
       }
-      .table-of-contents {
-        margin-bottom: 1em;
-        border-radius: 0.5em;
-        border:#007bff solid 1px;
-        padding-bottom: 1em;
+
+      .theme-selector {
+        display: flex;
+        gap: 8px;
+        background: rgba(118, 118, 128, 0.12);
+        padding: 4px;
+        border-radius: 20px;
       }
-      .table-of-contents h2 {
-        text-align: center;
-        margin: 0.5em;
-        font-size: 1.2em;
+
+      .theme-dot {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: transform 0.2s;
+        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
       }
-      #textContent {
+
+      .theme-dot.active {
+        border-color: var(--system-blue);
+        transform: scale(1.15);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      }
+
+      main {
+        padding: 24px 20px;
+        max-width: 680px; /* More readable width */
+        margin: 0 auto;
+        min-height: calc(100vh - 120px);
+      }
+
+      #content h1 {
+        font-size: 32px;
+        font-weight: 800;
+        margin: 0 0 20px;
+        letter-spacing: -0.8px;
+        line-height: 1.2;
+      }
+
+      #content p {
+        margin-bottom: 10px;
+      }
+
+      /* Image Toggle - Robust hiding */
+      img, .thumb, .image {
+        display: none !important;
+      }
+      
+      .show-images img, .show-images .thumb, .show-images .image {
+        display: block !important;
+        margin: 20px auto;
+        max-width: 100%;
+        height: auto;
+        border-radius: 12px;
+      }
+
+      section.collapsible {
+        background: var(--bg);
+        border-radius: 12px;
+        margin-bottom: 12px;
+        border: 0.5px solid var(--separator);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        position: relative;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      section.collapsible:active {
+        transform: scale(0.995);
+      }
+
+      section.collapsible h2 {
+        padding: 14px 16px;
+        padding-right: 80px; /* Space for both icons */
+        font-size: 17px;
+        font-weight: 600;
+        cursor: pointer;
+        display: block; /* Text will take space, icons absolute */
+        background: transparent;
+        position: relative;
+        line-height: 1.3;
+      }
+
+      section.collapsible h2::after {
+        content: "chevron_right";
+        font-family: 'Material Icons';
+        color: var(--system-gray3);
+        font-size: 22px;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        display: none !important;
+      }
+
+      section.active h2::after {
+        transform: translateY(-50%) rotate(90deg);
+      }
+
+      .remove-btn {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--system-gray3);
+        cursor: pointer;
+        padding: 6px;
+        font-size: 19px;
+        z-index: 10;
+        opacity: 0.3;
+        transition: opacity 0.2s, color 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .remove-btn:hover {
+        color: #ff3b30;
+        opacity: 1;
+      }
+
+      section.collapsible:hover .remove-btn, .remove-btn:active,
+      section.collapsible:hover .audio-btn, .audio-btn:active {
+        opacity: 0.6;
+      }
+
+      .audio-btn {
+        position: absolute;
+        right: 32px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--system-gray3);
+        cursor: pointer;
+        padding: 6px;
+        font-size: 19px;
+        z-index: 100;
+        opacity: 0.3;
+        transition: opacity 0.2s, color 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .audio-btn:hover {
+        color: var(--system-blue);
+        opacity: 1;
+      }
+
+      .audio-btn.active {
+        color: var(--system-blue);
+        opacity: 1;
+        animation: pulse 1.5s infinite;
+      }
+
+      @keyframes pulse {
+          0% { opacity: 0.5; }
+          50% { opacity: 1; }
+          100% { opacity: 0.5; }
+      }
+
+      .title-controls {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 20px;
+          align-items: center;
+      }
+
+      .title-btn {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: var(--secondary-bg);
+          color: var(--system-blue);
+          border: none;
+          padding: 8px 14px;
+          border-radius: 12px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+      }
+
+      .title-btn i { font-size: 18px; }
+      .title-btn:hover { background: var(--system-gray5); }
+
+      section.collapsible > *:not(h2):not(.remove-btn) {
         display: none;
-        white-space: pre-wrap;
-        font-family: monospace;
-        padding: 1em;
-        background: #111;
-        color: #eee;
-        border-radius: 0.5em;
+        padding: 0 20px 16px;
+      }
+
+      section.active > *:not(h2):not(.remove-btn) {
+        display: block;
+      }
+
+      .reader-mode {
+        font-family: "Iowan Old Style", "Palatino", "Georgia", serif;
+        max-width: 640px;
+        margin: 0 auto;
+      }
+
+      .reader-mode p {
+        margin-bottom: 1em;
+      }
+
+      #textContent {
+        background: #000;
+        color: #fff;
+        font-family: "SF Mono", Menlo, monospace;
+        padding: 60px 20px 20px;
+        border-radius: 12px;
+        font-size: 13px;
+        white-space: pre-wrap; /* Keep line breaks */
+        position: fixed;
+        inset: 0;
+        z-index: 4000;
+        overflow-y: auto;
+      }
+
+      .text-only-close {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 50%;
+        cursor: pointer;
+        z-index: 4100;
+      }
+
+      #textOnlyBody {
+        width: 100%;
+        height: 100%;
+      }
+
+      /* Book Mode Refinements */
+      #book-mode-container {
+        position: fixed;
+        inset: 0;
+        background: var(--bg);
+        z-index: 2000;
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      #book-mode-container.active {
+        display: flex;
+      }
+
+      #book-pages {
+        flex: 1;
+        width: 100vw;
+        padding: 60px 0; /* Vertical padding */
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        box-sizing: border-box;
+      }
+
+      #book-pages::-webkit-scrollbar {
+        display: none;
+      }
+
+      #book-content {
+        height: 100%;
+        column-width: 100vw;
+        column-gap: 0;
+        column-fill: auto;
+        padding: 0;
+        margin: 0;
+      }
+
+      .book-page-wrapper {
+        display: inline-block;
+        width: 100vw;
+        height: 100%;
+        scroll-snap-align: start;
+        padding: 0 40px; /* Content padding per page */
+        box-sizing: border-box;
+        font-family: "Iowan Old Style", "Palatino", "Georgia", serif;
+        font-size: 21px;
+        line-height: 1.6;
+        color: var(--text);
+        overflow: hidden;
+      }
+
+      /* Alternative CSS columns approach */
+      #book-pages-css {
+        height: 100%;
+        padding: 60px 0 40px;
+        column-width: 100vw;
+        column-gap: 0;
+        overflow-x: scroll;
+        scroll-snap-type: x mandatory;
+      }
+
+      #book-pages-css > * {
+        scroll-snap-align: start;
+        break-inside: avoid-column; /* This might not work as intended for long text */
+      }
+
+      /* Final implementation choice: Column Layout on one large element */
+      .book-article-columns {
+        height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+        margin-top: env(safe-area-inset-top);
+        column-width: 100vw;
+        column-gap: 0;
+        overflow-x: scroll;
+        column-fill: auto;
+        font-family: "Iowan Old Style", "Palatino", "Georgia", serif;
+        font-size: 1.1em;
+        line-height: 1.6;
+        color: var(--text);
+        box-sizing: border-box;
+      }
+
+      .book-article-columns > * {
+        margin-left: 40px;
+        margin-right: 40px;
+        max-width: calc(100vw - 80px);
+      }
+
+      .book-article-columns h1 {
+        margin-top: calc(50vh - 100px);
+        break-after: column;
+        font-size: 2.5em;
+        text-align: center;
+        max-width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+      }
+
+      .export-epub-btn {
+        background: var(--system-blue);
+        color: white;
+        border: none;
+        padding: 4px 12px;
+        border-radius: 14px;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-left: 10px;
+      }
+
+      .book-article-columns h2 {
+          display: block !important;
+          margin-block: 0.5em;
+          border-bottom: 0.5px solid var(--separator);
+          padding-bottom: 8px;
+          break-after: avoid;
+          padding-right: 0 !important;
+      }
+
+      .book-article-columns h2::after {
+          display: none !important; /* No chevrons in book mode */
+      }
+
+      .book-article-columns h3, .book-article-columns h4, .book-article-columns h5, .book-article-columns h6 {
+          margin-block: 0.5em;
+      } 
+
+      .book-article-columns p {
+          margin-bottom: 0.5em;
+      }
+
+      .book-article-columns .collapsible {
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          display: block !important;
+      }
+
+      .book-article-columns .collapsible > * {
+          display: block !important;
+          padding-left: 0 !important;
+          padding-right: 0 !important;
+      }
+
+      .book-article-columns .remove-btn {
+          display: none !important;
+      }
+
+      #book-mode-close {
+        position: absolute;
+        top: calc(20px + env(safe-area-inset-top));
+        right: calc(20px + env(safe-area-inset-right));
+        z-index: 2100;
+        background: var(--secondary-bg);
+        color: var(--text);
+        border: none;
+        padding: 10px;
+        border-radius: 50%;
+        cursor: pointer;
+        opacity: 0.8;
+      }
+
+      .book-mode-nav {
+        display: flex;
+        justify-content: center; /* Center the info */
+        gap: 20px;
+        align-items: center;
+        padding: 12px 24px;
+        padding-bottom: calc(12px + env(safe-area-inset-bottom));
+        background: var(--header-bg);
+        border-top: 0.5px solid var(--separator);
+        backdrop-filter: blur(10px);
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--secondary-text);
+      }
+      /* Modal Settings */
+      #settings-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 3000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0,0,0,0.3);
+        backdrop-filter: blur(10px);
+        padding: 24px;
+      }
+
+      #settings-modal.active {
+        display: flex;
+        animation: fadeIn 0.2s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: scale(1.05); }
+        to { opacity: 1; transform: scale(1); }
+      }
+
+      .modal-content {
+        background: var(--bg);
+        border-radius: 16px;
+        width: 100%;
+        max-width: 360px;
+        padding: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        border: 0.5px solid var(--separator);
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .modal-header h2 {
+        font-size: 19px;
+        font-weight: 700;
+      }
+
+      .setting-section {
+        background: var(--secondary-bg);
+        border-radius: 12px;
+        padding: 0 16px;
+      }
+
+      .setting-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 0.5px solid var(--separator);
+      }
+
+      .setting-row:last-child {
+        border-bottom: none;
+      }
+
+      .setting-label {
+        font-size: 15px;
+        font-weight: 500;
+      }
+
+      .close-modal-btn {
+        background: transparent;
+        color: var(--system-blue);
+        padding: 4px;
+        font-size: 24px;
       }
     </style>
 
@@ -246,87 +724,349 @@
             type="text"
             id="search-input"
             value=""
-            placeholder="Wiki article title"
+            placeholder="Search Wikipedia..."
           />
-          <button id="search-field-clear" onclick="clearSearchField()">
-            &#x2715;
+          <button id="search-field-clear" onclick="clearSearchField()" class="material-icons">
+            cancel
           </button>
         </label>
+        <button id="search-button">
+          Search
+        </button>
       </div>
 
       <div class="controls">
-        <div class="toggle-buttons flex-left">
-          <button id="search-button">
-            Search
+        <div class="toggle-buttons">
+          <button
+            id="settingsButton"
+            onclick="toggleSettings()"
+            class="toggle-button material-icons"
+            title="Settings"
+          >
+            settings
           </button>
-        </div>
-        <div class="toggle-buttons flex-right">
+          <button
+            id="bookButton"
+            onclick="toggleBookMode()"
+            class="toggle-button material-icons"
+            title="Book Mode"
+          >
+            menu_book
+          </button>
           <button
             id="youtubeButton"
             onclick="youtubeSearch()"
-            class="toggle-button"
+            class="toggle-button material-icons"
+            title="Search YouTube"
           >
-            📺
+            smart_display
           </button>
           <button
             id="readerButton"
             onclick="toggleReaderMode()"
-            class="toggle-button"
+            class="toggle-button material-icons"
+            title="Toggle Reader Mode"
           >
-            📖
+            auto_stories
           </button>
-          <!-- <button
-            id="darkModeButton"
-            onclick="toggleDarkMode()"
-            class="toggle-button"
-          >
-            🌙
-          </button> -->
-          <!-- button to show only text -->
           <button
             id="textOnlyButton"
             onclick="toggletextOnlyMode()"
-            class="toggle-button"
+            class="toggle-button material-icons"
+            title="Text Only Mode"
           >
-            [+]
+            format_align_left
           </button>
-          <!-- button to export this page as PDF -->
           <button
             id="exportButton"
             onclick="printArticle()"
-            class="toggle-button"
+            class="toggle-button material-icons"
+            title="Export PDF"
           >
-            🖨️
+            ios_share
           </button>
-          <!-- <input type="checkbox" id="full-screen-button" /> -->
+          <button
+            onclick="toggleAllSections(true)"
+            id="globalExpandBtn"
+            class="toggle-button material-icons"
+            title="Expand All"
+          >
+            unfold_more
+          </button>
+          <button
+            onclick="speakAll()"
+            id="readAllBtn"
+            class="toggle-button material-icons"
+            title="Read All"
+          >
+            play_arrow
+          </button>
         </div>
       </div>
-
-      <!-- <div class="speed-control controls">
-        <input
-          type="range"
-          id="speed-control"
-          min="0.5"
-          max="2"
-          step="0.1"
-          value="1"
-        />
-        <span id="speed-value">1.0x</span>
-      </div> -->
     </header>
 
     <main>
       <small id="status"></small>
       <div id="content"></div>
-      <div id="textContent" style="display: none;"></div>
+      <div id="textContent" style="display: none;">
+          <button class="text-only-close material-icons" onclick="toggletextOnlyMode()">close</button>
+          <div id="textOnlyBody"></div>
+      </div>
     </main>
 
+    <div id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button class="close-modal-btn material-icons" onclick="toggleSettings()">close</button>
+            </div>
+            
+            <div class="setting-section">
+                <div class="setting-row">
+                    <span class="setting-label">Appearance</span>
+                    <div class="theme-selector">
+                        <div class="theme-dot" style="background: #ffffff;" onclick="setTheme('light')" title="Light"></div>
+                        <div class="theme-dot" style="background: #f4ecd8;" onclick="setTheme('sepia')" title="Sepia"></div>
+                        <div class="theme-dot" style="background: #1c1c1e;" onclick="setTheme('dark')" title="Dark"></div>
+                        <div class="theme-dot" style="background: #000000;" onclick="setTheme('black')" title="Black"></div>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <span class="setting-label">Show Images</span>
+                    <button
+                        id="imageToggleButton"
+                        onclick="toggleImages()"
+                        class="toggle-button material-icons"
+                        style="color: var(--system-blue); padding: 0;"
+                    >
+                        visibility_off
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="book-mode-container">
+      <button id="book-mode-close" onclick="toggleBookMode()" class="material-icons">close</button>
+      <div id="book-pages"></div>
+      <div class="book-mode-nav">
+        <span id="book-page-info"></span>
+        <span id="book-word-count"></span>
+        <button class="export-epub-btn" onclick="exportEbook()">Export Ebook</button>
+      </div>
+    </div>
     <script>
       const contentDiv = document.getElementById("content");
       const statusDiv = document.getElementById("status");
       const textContent = document.getElementById("textContent");
-      let isReaderMode = false;
+      let isReaderMode = true;
       let isDarkMode = false;
+      
+      // --- NATIVE UTILITIES (NO EXTERNAL LIBRARIES) ---
+      const MiniZip = {
+        files: [],
+        addFile(name, content) { this.files.push({ name, content }); },
+        generateBlob() {
+          let offset = 0;
+          const localHeaders = [], centralHeaders = [];
+          this.files.forEach(file => {
+            const content = new TextEncoder().encode(file.content || ""), name = new TextEncoder().encode(file.name);
+            const date = new Date(), time = ((date.getHours() << 11) | (date.getMinutes() << 5) | (date.getSeconds() >> 1)) & 0xFFFF;
+            const modDate = (((date.getFullYear() - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate()) & 0xFFFF;
+            const crc = this.crc32(content), len = content.length;
+            const header = new Uint8Array(30 + name.length);
+            header.set([0x50, 0x4b, 0x03, 0x04, 10, 0, 0, 0, 0, 0]);
+            header.set([time & 0xFF, (time >> 8) & 0xFF], 10);
+            header.set([modDate & 0xFF, (modDate >> 8) & 0xFF], 12);
+            header.set([crc & 0xFF, (crc >> 8) & 0xFF, (crc >> 16) & 0xFF, (crc >> 24) & 0xFF], 14);
+            header.set([len & 0xFF, (len >> 8) & 0xFF, (len >> 16) & 0xFF, (len >> 24) & 0xFF], 18);
+            header.set([len & 0xFF, (len >> 8) & 0xFF, (len >> 16) & 0xFF, (len >> 24) & 0xFF], 22);
+            header.set([name.length & 0xFF, (name.length >> 8) & 0xFF], 26);
+            header.set(name, 30);
+            localHeaders.push(header, content);
+            const central = new Uint8Array(46 + name.length);
+            central.set([0x50, 0x4b, 0x01, 0x02, 10, 0, 10, 0, 0, 0, 0, 0]);
+            central.set([time & 0xFF, (time >> 8) & 0xFF], 12);
+            central.set([modDate & 0xFF, (modDate >> 8) & 0xFF], 14);
+            central.set([crc & 0xFF, (crc >> 8) & 0xFF, (crc >> 16) & 0xFF, (crc >> 24) & 0xFF], 16);
+            central.set([len & 0xFF, (len >> 8) & 0xFF, (len >> 16) & 0xFF, (len >> 24) & 0xFF], 20);
+            central.set([len & 0xFF, (len >> 8) & 0xFF, (len >> 16) & 0xFF, (len >> 24) & 0xFF], 24);
+            central.set([name.length & 0xFF, (name.length >> 8) & 0xFF], 28);
+            central.set([offset & 0xFF, (offset >> 8) & 0xFF, (offset >> 16) & 0xFF, (offset >> 24) & 0xFF], 42);
+            central.set(name, 46);
+            centralHeaders.push(central);
+            offset += header.length + content.length;
+          });
+          const centralSize = centralHeaders.reduce((acc, h) => acc + h.length, 0);
+          const end = new Uint8Array(22);
+          end.set([0x50, 0x4b, 0x05, 0x06, 0, 0, 0, 0]);
+          end.set([this.files.length & 0xFF, (this.files.length >> 8) & 0xFF], 8);
+          end.set([this.files.length & 0xFF, (this.files.length >> 8) & 0xFF], 10);
+          end.set([centralSize & 0xFF, (centralSize >> 8) & 0xFF, (centralSize >> 16) & 0xFF, (centralSize >> 24) & 0xFF], 12);
+          end.set([offset & 0xFF, (offset >> 8) & 0xFF, (offset >> 16) & 0xFF, (offset >> 24) & 0xFF], 16);
+          this.files = []; // reset
+          return new Blob([...localHeaders, ...centralHeaders, end], { type: "application/epub+zip" });
+        },
+        crc32(data) {
+          const table = new Uint32Array(256);
+          for (let i = 0; i < 256; i++) {
+            let c = i;
+            for (let j = 0; j < 8; j++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+            table[i] = c;
+          }
+          let crc = 0xFFFFFFFF;
+          for (let i = 0; i < data.length; i++) crc = (crc >>> 8) ^ table[(crc ^ data[i]) & 0xFF];
+          return (crc ^ 0xFFFFFFFF) >>> 0;
+        }
+      };
+
+      function htmlToMd(html) {
+          const temp = document.createElement('div');
+          temp.innerHTML = html;
+          const traverse = (node) => {
+              if (node.nodeType === 3) return node.textContent;
+              if (node.nodeType !== 1) return "";
+              const children = Array.from(node.childNodes).map(traverse).join("");
+              switch(node.tagName) {
+                  case 'H1': return `\n# ${children}\n`;
+                  case 'H2': return `\n## ${children}\n`;
+                  case 'H3': return `\n### ${children}\n`;
+                  case 'P': return `\n${children}\n`;
+                  case 'UL': return `\n${children}\n`;
+                  case 'LI': return `* ${children}\n`;
+                  case 'B': case 'STRONG': return `**${children}**`;
+                  case 'I': case 'EM': return `*${children}*`;
+                  case 'BR': return `\n`;
+                  case 'HR': return `\n---\n`;
+                  default: return children;
+              }
+          };
+          return traverse(temp).trim().replace(/\n{3,}/g, '\n\n');
+      }
+
+      // Initialize theme from localStorage
+      const savedTheme = localStorage.getItem('wiki-theme') || 'light';
+      setTheme(savedTheme);
+
+      function toggleSettings() {
+        const modal = document.getElementById('settings-modal');
+        modal.classList.toggle('active');
+      }
+
+      // Close settings modal on outside click
+      document.getElementById('settings-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'settings-modal') toggleSettings();
+      });
+
+      function setTheme(theme) {
+        document.body.setAttribute('data-theme', theme);
+        document.querySelectorAll('.theme-dot').forEach(dot => {
+          dot.classList.remove('active');
+          if (dot.getAttribute('onclick')?.includes(theme)) dot.classList.add('active');
+        });
+        localStorage.setItem('wiki-theme', theme);
+      }
+
+      function toggleImages() {
+        contentDiv.classList.toggle('show-images');
+        const isShown = contentDiv.classList.contains('show-images');
+        document.getElementById('imageToggleButton').textContent = isShown ? 'visibility' : 'visibility_off';
+      }
+
+      function toggleBookMode() {
+        const container = document.getElementById('book-mode-container');
+        container.classList.toggle('active');
+        if (container.classList.contains('active')) {
+          generateBookPages();
+          document.body.style.overflow = 'hidden';
+        } else {
+          document.body.style.overflow = '';
+        }
+      }
+
+      function generateBookPages() {
+        const pagesContainer = document.getElementById('book-pages');
+        pagesContainer.innerHTML = '';
+        pagesContainer.className = 'book-article-columns'; // Set column layout
+        
+        // Clone and expand everything
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = contentDiv.innerHTML;
+        
+        // Expand all collapsible sections for the book view
+        tempDiv.querySelectorAll('.collapsible').forEach(el => {
+            el.classList.add('active');
+            el.classList.remove('collapsible'); // Remove behavior
+        });
+        
+        // Remove interactive/extraneous elements
+        tempDiv.querySelectorAll('.remove-btn, script, style').forEach(el => el.remove());
+        
+        // In the book mode, the images are already handled by CSS !important, 
+        // but let's make sure things are clean
+        pagesContainer.innerHTML = tempDiv.innerHTML;
+        
+        // Scroll back to beginning
+        pagesContainer.scrollLeft = 0;
+        
+        updateBookPageInfo();
+      }
+
+      function updateBookPageInfo() {
+        const container = document.getElementById('book-pages');
+        const totalWidth = container.scrollWidth;
+        const viewportWidth = container.clientWidth;
+        
+        if (viewportWidth === 0) return;
+        
+        const totalPages = Math.round(totalWidth / viewportWidth);
+        const currentIndex = Math.round(container.scrollLeft / viewportWidth) + 1;
+        
+        const info = document.getElementById('book-page-info');
+        info.textContent = `PAGE ${currentIndex} OF ${totalPages}`;
+
+        // Word Count
+        const text = container.innerText || "";
+        const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
+        document.getElementById('book-word-count').textContent = `${wordCount.toLocaleString()} WORDS`;
+      }
+
+      function exportEbook() {
+        const title = document.querySelector('.book-article-columns h1')?.innerText || "Article";
+        const content = document.getElementById('book-pages').innerHTML;
+        const styles = `
+<style>
+  body { 
+    font-family: "Iowan Old Style", "Palatino", "Georgia", serif; 
+    padding: 3em 10%; 
+    line-height: 1.65; 
+    max-width: 800px; 
+    margin: 0 auto; 
+    color: #1a1a1a;
+    background: #fdfdfd;
+  }
+  h1 { text-align: center; margin-top: 40vh; font-size: 3em; break-after: page; }
+  h2 { border-bottom: 2px solid #eee; padding-bottom: 12px; margin-top: 3em; }
+  h3 { margin-top: 2em; }
+  p { margin-bottom: 1.2em; text-align: justify; }
+  hr { margin: 3em 0; border: none; border-top: 1px solid #ddd; }
+  .remove-btn, .collapsible-icon { display: none; }
+</style>`;
+
+        const fullHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>${styles}</head><body>${content}</body></html>`;
+        
+        const blob = new Blob([fullHtml], { type: 'text/html' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `${title.toLowerCase().replaceAll(" ", "-")}.html`;
+        a.click();
+      }
+
+      window.addEventListener('resize', () => {
+        if (document.getElementById('book-mode-container').classList.contains('active')) {
+          generateBookPages();
+        }
+      });
 
       const elementsToRemove = [
         "ad",
@@ -469,47 +1209,157 @@
             img.removeAttribute("resource");
           });
 
-          contentDiv.innerHTML = `<h1>${title.innerText}</h1><hr>` + content.innerHTML;
+          const h1 = document.createElement('h1');
+          h1.innerText = title.innerText;
+          contentDiv.appendChild(h1);
+          
+          const hr = document.createElement('hr');
+          contentDiv.appendChild(hr);
 
-          textContent.innerHTML = contentDiv.innerHTML;
+          const mainContentWrap = document.createElement('div');
+          mainContentWrap.innerHTML = content.innerHTML;
+          contentDiv.appendChild(mainContentWrap);
+
+          const tempTextDiv = document.createElement('div');
+          tempTextDiv.innerHTML = contentDiv.innerHTML;
           // remove sections where the h2 is "See also" or "References" etc
-          textContent.querySelectorAll("h2").forEach((header) => {
+          tempTextDiv.querySelectorAll("h2").forEach((header) => {
             if (header.textContent === "See also" || header.textContent === "Notes" || header.textContent === "References" || header.textContent === "Additional sources" || header.textContent === "External links" || header.textContent === "Further reading" || header.textContent === "Bibliography") {
               // remove the header and its parent element
               header.parentElement.remove();
             }
           });
-          // remove all elemebtsToRemove from textContent
+          // remove all elemebtsToRemove from tempTextDiv
           elementsToRemove.forEach((selector) => {
-            textContent.querySelectorAll(selector).forEach((el) => {
+            tempTextDiv.querySelectorAll(selector).forEach((el) => {
               el.remove();
             });
           });
-          // remove newlines with spaces
-          textContent.textContent = textContent.textContent.replace(/\n/g, "NEWLINEHEY");
-          // remove multiple NEWLINEHEY in a row and replace with a single new line
-          textContent.textContent = textContent.textContent.replace(/(NEWLINEHEY\s*)+/g, "NEWLINEHEY");
-          // replace NEWLINEHEY with a new line
-          textContent.innerHTML = textContent.innerHTML.replace(/NEWLINEHEY/g, "\n\n");
-
-          textContent.innerHTML = textContent.textContent
+          // GENERATE MARKDOWN
+          const markdownContent = htmlToMd(tempTextDiv.innerHTML);
+          document.getElementById('textOnlyBody').textContent = markdownContent;
 
           convertLinksToSearch();
 
           document.querySelectorAll("h2").forEach((header) => {
             const section = header.parentElement;
-            section.classList.add("collapsible");
+            if (section && section.tagName === 'SECTION') {
+                section.classList.add("collapsible");
 
-            header.addEventListener("click", () => {
-              section.classList.toggle("active");
-            });
+                // Ensure header is relative for its absolute buttons
+                header.style.position = 'relative';
+                
+                // Add remove button
+                const removeBtn = document.createElement('span');
+                removeBtn.className = 'remove-btn material-icons';
+                removeBtn.textContent = 'close';
+                removeBtn.title = 'Remove section';
+                removeBtn.onclick = (e) => {
+                  e.stopPropagation();
+                  section.style.display = 'none';
+                };
+                header.appendChild(removeBtn);
+
+                 // Add audio button
+                const audioBtn = document.createElement('span');
+                audioBtn.className = 'audio-btn material-icons';
+                audioBtn.textContent = 'volume_up';
+                audioBtn.title = 'Read section';
+                audioBtn.onclick = (e) => {
+                  e.stopPropagation();
+                  speakSection(section, audioBtn);
+                };
+                header.appendChild(audioBtn);
+
+                header.addEventListener("click", () => {
+                  section.classList.toggle("active");
+                });
+            }
           });
 
           statusDiv.textContent = "";
+
+          window.speechSynthesis.cancel(); // Stop any pending speech on new load
+          
+          if (isReaderMode) {
+            applyReaderMode();
+          }
         } catch (error) {
           contentDiv.innerHTML = `Error: ${error.message}`;
           statusDiv.textContent = "Failed to load content";
         }
+      }
+
+       // --- AUDIO / SPEECH LOGIC ---
+      let currentUtterance = null;
+
+      function speakSection(section, btn) {
+        if (window.speechSynthesis.speaking && btn.classList.contains('active')) {
+          window.speechSynthesis.cancel();
+          btn.classList.remove('active');
+          btn.textContent = 'volume_up';
+          return;
+        }
+
+        window.speechSynthesis.cancel();
+        document.querySelectorAll('.audio-btn, .title-btn').forEach(b => {
+            b.classList.remove('active');
+            if (b.querySelector('i')) b.querySelector('i').textContent = 'play_arrow';
+            else b.textContent = 'volume_up';
+        });
+
+        const text = section.innerText.replace(/close|volume_up/g, "").trim();
+        const utterance = new SpeechSynthesisUtterance(text);
+        
+        utterance.onstart = () => {
+          btn.classList.add('active');
+          btn.textContent = 'stop';
+        };
+        utterance.onend = () => {
+          btn.classList.remove('active');
+          btn.textContent = 'volume_up';
+        };
+
+        window.speechSynthesis.speak(utterance);
+      }
+
+      function speakAll() {
+        const btn = document.getElementById('readAllBtn');
+
+        if (window.speechSynthesis.speaking && btn.classList.contains('active')) {
+           window.speechSynthesis.cancel();
+           btn.classList.remove('active');
+           btn.textContent = 'play_arrow';
+           return;
+        }
+        
+        // Expand all before reading
+        toggleAllSections(true);
+
+        window.speechSynthesis.cancel();
+        const text = contentDiv.innerText.replace(/close|volume_up|Expand All|Read All/g, "").trim();
+        const utterance = new SpeechSynthesisUtterance(text);
+
+        utterance.onstart = () => {
+            btn.classList.add('active');
+            btn.textContent = 'stop';
+        };
+        utterance.onend = () => {
+            btn.classList.remove('active');
+            btn.textContent = 'play_arrow';
+        };
+
+        window.speechSynthesis.speak(utterance);
+      }
+
+      function toggleAllSections(forceExpand = false) {
+          const sections = document.querySelectorAll('.collapsible');
+          const isSomeCollapsed = Array.from(sections).some(s => !s.classList.contains('active'));
+          
+          sections.forEach(s => {
+              if (forceExpand || isSomeCollapsed) s.classList.add('active');
+              else s.classList.remove('active');
+          });
       }
 
       function youtubeSearch() {
@@ -535,12 +1385,16 @@
       }
 
       function toggleReaderMode() {
-        const content = document.getElementById("content");
         isReaderMode = !isReaderMode;
+        applyReaderMode();
+      }
+
+      function applyReaderMode() {
+        const content = document.getElementById("content");
 
         if (isReaderMode) {
           content.classList.add("reader-mode");
-          document.getElementById("readerButton").textContent = "🖥️";
+          document.getElementById("readerButton").textContent = "view_quilt";
 
           content.querySelectorAll(elementsToRemove).forEach((el) => {
             el.style.display = "none";
@@ -573,7 +1427,7 @@
 
         } else {
           content.classList.remove("reader-mode");
-          document.getElementById("readerButton").textContent = "📖";
+          document.getElementById("readerButton").textContent = "auto_stories";
 
           // Restore hidden elements
           content
@@ -586,15 +1440,72 @@
         }
       }
 
-      toggleReaderMode();
+      applyReaderMode();
+      
+      // Initialize book mode scroll listener
+      document.getElementById('book-pages').addEventListener('scroll', updateBookPageInfo);
 
       function toggletextOnlyMode() {      
-        content.style.display = content.style.display === "none" ? "block" : "none";
+        contentDiv.style.display = contentDiv.style.display === "none" ? "block" : "none";
         textContent.style.display = textContent.style.display === "none" ? "block" : "none";
+        // Update markdown content just in case
+        if (textContent.style.display === "block") {
+           document.getElementById('textOnlyBody').textContent = htmlToMd(contentDiv.innerHTML);
+        }
         // hide headers and footers
         document.querySelectorAll("header, footer").forEach((el) => {
           el.style.display = el.style.display === "none" ? "flex" : "none";
         });
+      }
+
+      function exportEbook() {
+        const title = document.querySelector('.book-article-columns h1')?.innerText || "Article";
+        const bookPages = document.getElementById('book-pages');
+        
+        // --- STEP 1: GENERATE WELL-FORMED XHTML ---
+        // Create a temporary document to ensure strict XML compliance
+        const doc = document.implementation.createDocument('http://www.w3.org/1999/xhtml', 'html', null);
+        const html = doc.documentElement;
+        
+        const head = doc.createElementNS('http://www.w3.org/1999/xhtml', 'head');
+        const tit = doc.createElementNS('http://www.w3.org/1999/xhtml', 'title');
+        tit.textContent = title;
+        head.appendChild(tit);
+        
+        const style = doc.createElementNS('http://www.w3.org/1999/xhtml', 'style');
+        style.setAttribute('type', 'text/css');
+        style.textContent = "body { font-family: serif; line-height: 1.6; padding: 5%; color: #111; } h1 { text-align: center; margin-top: 30%; } h2 { border-bottom: 1px solid #eee; } p { margin-bottom: 1em; } img { max-width: 100%; height: auto; }";
+        head.appendChild(style);
+        html.appendChild(head);
+        
+        const body = doc.createElementNS('http://www.w3.org/1999/xhtml', 'body');
+        const contentClone = bookPages.cloneNode(true);
+        // Remove interactive elements
+        contentClone.querySelectorAll('script, style, .remove-btn, .text-only-close').forEach(el => el.remove());
+        
+        // --- FIX: Don't use innerHTML. Import nodes into the XML document for compatibility ---
+        Array.from(contentClone.childNodes).forEach(node => {
+           body.appendChild(doc.importNode(node, true));
+        });
+        html.appendChild(body);
+
+        // Serialize to well-formed XML string
+        const xhtmlContent = '<?xml version="1.0" encoding="utf-8"?>\n' + 
+                           '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">\n' +
+                           new XMLSerializer().serializeToString(doc);
+
+        // --- STEP 2: CREATE EPUB STRUCTURE ---
+        MiniZip.addFile("mimetype", "application/epub+zip");
+        MiniZip.addFile("META-INF/container.xml", '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
+        MiniZip.addFile("OEBPS/content.opf", `<?xml version="1.0" encoding="utf-8"?><package xmlns="http://www.idpf.org/2007/opf" unique-identifier="bookid" version="2.0"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>${title}</dc:title><dc:language>en</dc:language><dc:identifier id="bookid">urn:uuid:${self.crypto?.randomUUID() || Date.now()}</dc:identifier></metadata><manifest><item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/><item id="content" href="article.html" media-type="application/xhtml+xml"/></manifest><spine toc="ncx"><itemref idref="content"/></spine></package>`);
+        MiniZip.addFile("OEBPS/toc.ncx", `<?xml version="1.0" encoding="UTF-8"?><ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1"><docTitle><text>${title}</text></docTitle><navMap><navPoint id="p1" playOrder="1"><navLabel><text>Content</text></navLabel><content src="article.html"/></navPoint></navMap></ncx>`);
+        MiniZip.addFile("OEBPS/article.html", xhtmlContent);
+
+        const epubBlob = MiniZip.generateBlob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(epubBlob);
+        a.download = `${title.toLowerCase().replaceAll(" ", "-")}.epub`;
+        a.click();
       }
 
       function printArticle() {
